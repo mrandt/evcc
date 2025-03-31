@@ -11,6 +11,18 @@ params:
     choice: ["tcpip"]
   - name: capacity
     advanced: true
+  - name: energy-sensor
+    advanced: true
+    description:
+      en: Energy-Sensor to be used for grid
+      de: Für grid zu verwendender Energiesensor
+    help:
+      en: "Use either built-in energy sensors or external meter (e.g. YDS60 or DTSU666) connected to RS485#2."
+      de: "Eingebaute (built-in) Energiemessung oder externen (external) an RS485#2 angeschlossenen Stromzähler (z.B. YDS60 oder DTSU666) verwenden."
+    type: choice
+    choice: ["built-in", "external"]
+    default: built-in
+    usages: ["grid"]
 render: |
   type: custom
   {{- if eq .usage "grid" }}
@@ -19,7 +31,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: 31657 # Active power of built-in electric energy sensor
+      address: {{ if (eq .energy-sensor "external") }}31913 # Active power of external electric energy sensor{{ else }}31657 # Active power of built-in electric energy sensor{{ end }}
       type: holding
       decode: int32
   energy:
@@ -27,7 +39,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: 31679 # Total negative active energy of built-in electric energy sensor
+      address: {{ if (eq .energy-sensor "external") }}31935 # Total negative active energy of external electric energy sensor{{ else }}31679 # Total negative active energy of built-in electric energy sensor{{ end }}
       type: holding
       decode: int64
     scale: 0.01
@@ -36,7 +48,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: 31651 # Huawei phase A grid current
+      address: {{ if (eq .energy-sensor "external") }}31907 # Phase A current of external electric energy sensor{{ else }}31651 # Phase A current of built-in electric energy sensor{ end }}
       type: holding
       decode: int32
     scale: 0.1
@@ -44,7 +56,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: 31653 # Huawei phase B grid current
+      address: {{ if (eq .energy-sensor "external") }}31909 # Phase B current of external electric energy sensor{{ else }}31653 # Phase B current of built-in electric energy sensor{{ end }}
       type: holding
       decode: int32
     scale: 0.1
@@ -52,7 +64,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: 31655 # Huawei phase C grid current
+      address: {{ if (eq .energy-sensor "external") }}31911 # Phase C current of external electric energy sensor{{ else }}31655 # Phase C current of built-in electric energy sensor{{ end }}
       type: holding
       decode: int32
     scale: 0.1

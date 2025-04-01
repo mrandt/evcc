@@ -9,20 +9,21 @@ params:
     allinone: true
   - name: modbus
     choice: ["tcpip"]
+  - name: energysensor
+    type: choice
+    choice: ["internal", "external"]
+    description:
+      en: Energy-Sensor to be used
+      de: Zu verwendender Energiesensor
+    help:
+      en: "internal: built-in energy sensor, external: RS485 connected power meter like a YDS60 or DTSU666"
+      de: "internal: eingebauter Energiesensor, external: per RS485 angeschlossener Energiezähler, z.B. YDS60 oder DTSU666"
+    advanced: true
+    default: internal
+    usages: ["grid"]
   - name: capacity
     advanced: true
-  - name: energy-sensor
-    advanced: true
-    description:
-      en: Energy-Sensor to be used for grid
-      de: Für grid zu verwendender Energiesensor
-    help:
-      en: "Use either built-in energy sensors or external meter (e.g. YDS60 or DTSU666) connected to RS485#2."
-      de: "Eingebaute (built-in) Energiemessung oder externen (external) an RS485#2 angeschlossenen Stromzähler (z.B. YDS60 oder DTSU666) verwenden."
-    type: choice
-    choice: ["built-in", "external"]
-    default: built-in
-    usages: ["grid"]
+    usages: ["battery"]
 render: |
   type: custom
   {{- if eq .usage "grid" }}
@@ -31,7 +32,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: {{ if (eq .energy-sensor "external") }}31913 # Active power of external electric energy sensor{{ else }}31657 # Active power of built-in electric energy sensor{{ end }}
+      address: {{ if eq .energysensor "external" }}31913{{ else }}31657{{ end }} # active power of electric energy sensor
       type: holding
       decode: int32
   energy:
@@ -39,7 +40,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: {{ if (eq .energy-sensor "external") }}31935 # Total negative active energy of external electric energy sensor{{ else }}31679 # Total negative active energy of built-in electric energy sensor{{ end }}
+      address: {{ if eq .energysensor "external" }}31935{{ else }}31679{{ end }} # total negative active energy of electric energy sensor
       type: holding
       decode: int64
     scale: 0.01
@@ -48,7 +49,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: {{ if (eq .energy-sensor "external") }}31907 # Phase A current of external electric energy sensor{{ else }}31651 # Phase A current of built-in electric energy sensor{ end }}
+      address: {{ if eq .energysensor "external" }}31907{{ else }}31651{{ end }} # phase A current of electric energy sensor
       type: holding
       decode: int32
     scale: 0.1
@@ -56,7 +57,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: {{ if (eq .energy-sensor "external") }}31909 # Phase B current of external electric energy sensor{{ else }}31653 # Phase B current of built-in electric energy sensor{{ end }}
+      address: {{ if eq .energysensor "external" }}31909{{ else }}31653{{ end }} # phase B current of electric energy sensor
       type: holding
       decode: int32
     scale: 0.1
@@ -64,7 +65,7 @@ render: |
     id: 0
     uri: {{ .host }}:{{ .port }}
     register:
-      address: {{ if (eq .energy-sensor "external") }}31911 # Phase C current of external electric energy sensor{{ else }}31655 # Phase C current of built-in electric energy sensor{{ end }}
+      address: {{ if eq .energysensor "external" }}31911{{ else }}31655{{ end }} # phase C current of electric energy sensor
       type: holding
       decode: int32
     scale: 0.1
